@@ -178,6 +178,7 @@ static class Patch_Damage
 
       <h2 id="other-games">Other Unity games</h2>
       <p>The loader core contains no Raft-specific code. To use it with another Unity <b>Mono</b> game, copy the same four items (<code>winhttp.dll</code>, <code>doorstop_config.ini</code>, <code>.doorstop_version</code>, <code>KnightLoader\</code>) into that game's folder and create a <code>Mods\</code> folder. A game is Mono if its install has a <code>MonoBleedingEdge</code> folder; if it has <code>GameAssembly.dll</code> instead, it's IL2CPP and not supported.</p>
+      <p><b>Version floor:</b> KnightLoader targets <b>Unity 2017.2 or newer</b> (the "module" era, where <code>UnityEngine.CoreModule.dll</code> exists in <code>Managed\</code>). Unity 5.x / pre-2017 games ship a single monolithic <code>UnityEngine.dll</code> and the older .NET 3.5 Mono profile, which this build can't load.</p>
 
       <h2 id="troubleshooting">Troubleshooting</h2>
       <table class="doc-table">
