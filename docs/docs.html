@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0b0c">
+  <meta name="description" content="KnightLoader documentation — install guide, writing your first mod, and the full mod API reference.">
+  <title>Documentation — KnightLoader</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="assets/knightloader-logo.png">
+</head>
+<body>
+  <header class="nav-wrap">
+    <a class="brand" href="index.html" aria-label="KnightLoader home">
+      <span class="brand-icon">K</span>
+      <span>Knight<b>Loader</b></span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="index.html#features">Features</a>
+      <a href="docs.html">Docs</a>
+      <a href="index.html#releases">Releases</a>
+      <a href="https://github.com/TheUndeadKnightDev/KnightLoader">GitHub</a>
+    </nav>
+    <a class="nav-download" href="https://github.com/TheUndeadKnightDev/KnightLoader/releases/latest">Download <span>↓</span></a>
+  </header>
+
+  <main class="doc-page">
+    <aside class="doc-toc" aria-label="On this page">
+      <p>ON THIS PAGE</p>
+      <a href="#install">Installing</a>
+      <a href="#first-mod">Your first mod</a>
+      <a href="#lifecycle">The mod lifecycle</a>
+      <a href="#api">API reference</a>
+      <a href="#harmony">Patching game code</a>
+      <a href="#other-games">Other Unity games</a>
+      <a href="#troubleshooting">Troubleshooting</a>
+      <a href="#uninstall">Uninstalling</a>
+    </aside>
+
+    <article class="doc-body">
+      <p class="overline">Documentation</p>
+      <h1>KnightLoader docs</h1>
+      <p class="doc-intro">Everything you need to install KnightLoader and build mods with it. Applies to KnightLoader v1.x on Unity <b>Mono</b> games (IL2CPP titles are not supported).</p>
+
+      <h2 id="install">Installing</h2>
+      <ol>
+        <li>Download the latest <code>KnightLoader-vX.Y.Z.zip</code> from the <a href="index.html#releases">Releases</a> section.</li>
+        <li>Copy <b>everything</b> in the zip into your game's folder — the one containing the game's <code>.exe</code> (for Raft: <code>...\steamapps\common\Raft</code>).</li>
+        <li>Launch the game normally (Steam is fine).</li>
+        <li>Confirm it's running: the file <code>KnightLoader\KnightLoader.log</code> appears in the game folder and ends with <code>N mod(s) active</code>.</li>
+      </ol>
+      <p>Your game folder will look like this:</p>
+      <pre class="doc-code">Raft\
+  Raft.exe
+  winhttp.dll              ← Doorstop bootstrap (loads KnightLoader at startup)
+  doorstop_config.ini
+  .doorstop_version
+  KnightLoader\
+    KnightLoader.dll        ← the loader
+    0Harmony.dll            ← runtime patching library
+    Mono.Cecil.dll
+    KnightLoader.log        ← created on first launch
+  Mods\
+    SampleMod.dll           ← mods go here (one DLL each)</pre>
+      <p>No game files are modified. To disable temporarily, rename <code>winhttp.dll</code> to <code>winhttp.dll.disabled</code>.</p>
+
+      <h2 id="first-mod">Your first mod</h2>
+      <p>A mod is a single .NET class-library DLL dropped into <code>Mods\</code>. You need any C# compiler (Visual Studio, Rider, or the <code>dotnet</code> SDK) and three kinds of references, all taken from your KnightLoader install and your game:</p>
+      <ul>
+        <li><code>KnightLoader\KnightLoader.dll</code> — the mod API</li>
+        <li><code>KnightLoader\0Harmony.dll</code> — only if you patch game code</li>
+        <li>Game assemblies from <code>&lt;Game&gt;_Data\Managed\</code> — e.g. <code>UnityEngine.CoreModule.dll</code>, and <code>Assembly-CSharp.dll</code> for the game's own classes</li>
+      </ul>
+      <p>Minimal project file (<code>MyFirstMod.csproj</code>):</p>
+      <pre class="doc-code">&lt;Project Sdk="Microsoft.NET.Sdk"&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;netstandard2.0&lt;/TargetFramework&gt;
+    &lt;AssemblyName&gt;MyFirstMod&lt;/AssemblyName&gt;
+  &lt;/PropertyGroup&gt;
+  &lt;ItemGroup&gt;
+    &lt;Reference Include="KnightLoader"&gt;
+      &lt;HintPath&gt;C:\...\Raft\KnightLoader\KnightLoader.dll&lt;/HintPath&gt;
+    &lt;/Reference&gt;
+    &lt;Reference Include="0Harmony"&gt;
+      &lt;HintPath&gt;C:\...\Raft\KnightLoader\0Harmony.dll&lt;/HintPath&gt;
+    &lt;/Reference&gt;
+    &lt;Reference Include="UnityEngine.CoreModule"&gt;
+      &lt;HintPath&gt;C:\...\Raft\Raft_Data\Managed\UnityEngine.CoreModule.dll&lt;/HintPath&gt;
+    &lt;/Reference&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;</pre>
+      <p>And the mod itself (<code>MyFirstMod.cs</code>):</p>
+      <pre class="doc-code">using KnightLoader;
+
+[ModInfo("My First Mod", "1.0.0", "YourName")]
+public class MyFirstMod : Mod
+{
+    public override void OnLoad()
+    {
+        LogInfo("Hello from My First Mod!");
+    }
+}</pre>
+      <p>Build with <code>dotnet build -c Release</code>, copy <code>MyFirstMod.dll</code> into <code>Mods\</code>, launch the game, and check <code>KnightLoader.log</code> for your hello.</p>
+
+      <h2 id="lifecycle">The mod lifecycle</h2>
+      <p>The loader scans <code>Mods\*.dll</code> at startup, instantiates every class implementing <code>IMod</code>, then drives these callbacks on Unity's main thread. Exceptions in any callback are caught and logged per-mod — one broken mod can't take the others down.</p>
+      <table class="doc-table">
+        <tr><th>Callback</th><th>When it runs</th><th>Use it for</th></tr>
+        <tr><td><code>OnLoad()</code></td><td>Once, after all mods are discovered</td><td>Setup, applying Harmony patches</td></tr>
+        <tr><td><code>OnUpdate()</code></td><td>Every frame (Unity <code>Update</code>)</td><td>Input polling, per-frame logic — keep it light</td></tr>
+        <tr><td><code>OnGUI()</code></td><td>Unity's IMGUI pass (multiple times per frame)</td><td>Overlays, debug UI</td></tr>
+        <tr><td><code>OnUnload()</code></td><td>Once, on game quit</td><td>Unpatching, saving, cleanup</td></tr>
+      </table>
+
+      <h2 id="api">API reference</h2>
+
+      <h3><code>abstract class Mod : IMod</code></h3>
+      <p>The recommended base class — override only what you need.</p>
+      <table class="doc-table">
+        <tr><th>Member</th><th>Description</th></tr>
+        <tr><td><code>Harmony</code></td><td><code>HarmonyLib.Harmony</code> instance unique to this mod, created on first access. Use it to apply and remove your patches.</td></tr>
+        <tr><td><code>LogInfo / LogWarn / LogError(string)</code></td><td>Write to <code>KnightLoader.log</code>, prefixed with your mod's class name.</td></tr>
+        <tr><td><code>OnLoad / OnUpdate / OnGUI / OnUnload()</code></td><td>Lifecycle overrides (see above). All optional.</td></tr>
+      </table>
+
+      <h3><code>[ModInfo(name, version, author)]</code></h3>
+      <p>Optional class attribute giving your mod a friendly display name in the log. <code>version</code> defaults to <code>"1.0.0"</code>, <code>author</code> to empty.</p>
+
+      <h3><code>interface IMod</code></h3>
+      <p>The raw contract (<code>OnLoad</code>, <code>OnUpdate</code>, <code>OnGUI</code>, <code>OnUnload</code>) — implement it directly if you don't want the base class conveniences.</p>
+
+      <h3><code>static class Log</code></h3>
+      <table class="doc-table">
+        <tr><th>Member</th><th>Description</th></tr>
+        <tr><td><code>Log.Info / Warn / Error(string)</code></td><td>Unprefixed log lines (prefer the <code>Mod</code> helpers).</td></tr>
+        <tr><td><code>Log.Exception(string context, Exception ex)</code></td><td>Log an exception with context.</td></tr>
+      </table>
+
+      <h3><code>static class ModLoader</code></h3>
+      <table class="doc-table">
+        <tr><th>Member</th><th>Description</th></tr>
+        <tr><td><code>ModLoader.Version</code></td><td>Loader version string.</td></tr>
+        <tr><td><code>ModLoader.GameRoot</code></td><td>Game install folder (contains the game's .exe).</td></tr>
+        <tr><td><code>ModLoader.ModsDir</code></td><td>Full path of the <code>Mods</code> folder.</td></tr>
+        <tr><td><code>ModLoader.LoaderDir</code></td><td>Full path of the <code>KnightLoader</code> folder (put config files here or in ModsDir).</td></tr>
+      </table>
+
+      <h2 id="harmony">Patching game code</h2>
+      <p>KnightLoader ships <b>Harmony 2</b> for rewriting game methods in memory at runtime. Decompile the game's <code>Assembly-CSharp.dll</code> with <a href="https://github.com/icsharpcode/ILSpy">ILSpy</a> or dnSpy to find targets, then declare patches and apply them in <code>OnLoad</code>. A real example from the Raft SampleMod — cancelling all player damage:</p>
+      <pre class="doc-code">using HarmonyLib;
+using KnightLoader;
+
+[ModInfo("God Mode", "1.0.0")]
+public class GodMode : Mod
+{
+    internal static bool Enabled = true;
+
+    public override void OnLoad()
+    {
+        Harmony.PatchAll();      // applies every [HarmonyPatch] in this DLL
+        LogInfo("Patched.");
+    }
+
+    public override void OnUnload()
+    {
+        Harmony.UnpatchAll(Harmony.Id);
+    }
+}
+
+// PlayerStats.Damage is a real method in Raft's Assembly-CSharp.dll.
+// A prefix returning false skips the original entirely.
+[HarmonyPatch(typeof(PlayerStats), nameof(PlayerStats.Damage))]
+static class Patch_Damage
+{
+    static bool Prefix() =&gt; !GodMode.Enabled;
+}</pre>
+      <p><b>Prefix</b> runs before the original (return <code>false</code> to skip it), <b>Postfix</b> after it, <b>Transpiler</b> rewrites its IL. See the <a href="https://harmony.pardeike.net/">Harmony documentation</a> for the full patching guide.</p>
+
+      <h2 id="other-games">Other Unity games</h2>
+      <p>The loader core contains no Raft-specific code. To use it with another Unity <b>Mono</b> game, copy the same four items (<code>winhttp.dll</code>, <code>doorstop_config.ini</code>, <code>.doorstop_version</code>, <code>KnightLoader\</code>) into that game's folder and create a <code>Mods\</code> folder. A game is Mono if its install has a <code>MonoBleedingEdge</code> folder; if it has <code>GameAssembly.dll</code> instead, it's IL2CPP and not supported.</p>
+
+      <h2 id="troubleshooting">Troubleshooting</h2>
+      <table class="doc-table">
+        <tr><th>Symptom</th><th>Fix</th></tr>
+        <tr><td>No <code>KnightLoader.log</code> appears</td><td>Doorstop didn't load: check <code>winhttp.dll</code> and <code>doorstop_config.ini</code> are next to the game's .exe, and <code>enabled=true</code> in the ini.</td></tr>
+        <tr><td>Log says <code>No IMod implementation found</code></td><td>Your mod class must be <code>public</code>, non-abstract, and implement <code>IMod</code> (or extend <code>Mod</code>).</td></tr>
+        <tr><td><code>Failed to load &lt;mod&gt;.dll</code></td><td>Usually a missing reference — ship extra dependency DLLs in <code>Mods\</code> (the loader resolves from there), and build against the game's own assembly versions.</td></tr>
+        <tr><td>Legacy <code>Input</code> throws</td><td>Some games (incl. Raft) use the new Input System; wrap legacy input in try/catch or use <code>UnityEngine.InputSystem</code>.</td></tr>
+        <tr><td>Game misbehaves with mods installed</td><td>Rename <code>winhttp.dll</code> → <code>winhttp.dll.disabled</code> to confirm it's mod-related, then remove mod DLLs one at a time.</td></tr>
+      </table>
+
+      <h2 id="uninstall">Uninstalling</h2>
+      <p>Delete <code>winhttp.dll</code>, <code>doorstop_config.ini</code>, <code>.doorstop_version</code>, the <code>KnightLoader\</code> folder and the <code>Mods\</code> folder from the game directory. That's everything — no game files were ever changed.</p>
+    </article>
+  </main>
+
+  <footer>
+    <a class="brand" href="index.html"><span class="brand-icon">K</span><span>Knight<b>Loader</b></span></a>
+    <p>Universal mod loading for Unity games.</p>
+    <div>
+      <a href="index.html#features">Features</a>
+      <a href="docs.html">Docs</a>
+      <a href="https://github.com/TheUndeadKnightDev/KnightLoader">GitHub</a>
+      <a href="index.html#releases">Releases</a>
+    </div>
+    <small>© 2026 Undead Knight Developments</small>
+  </footer>
+</body>
+</html>
