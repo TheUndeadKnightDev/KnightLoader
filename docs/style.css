@@ -166,3 +166,30 @@ footer small { grid-column: 1 / -1; padding-top: 23px; border-top: 1px solid #20
   .release { padding: 16px; }
   .release-date { margin-left: 0; flex-basis: 100%; }
 }
+
+/* ---- Documentation page ---- */
+.doc-page { max-width: 1200px; margin: auto; padding: clamp(40px, 5vw, 80px) clamp(24px, 5vw, 72px); display: grid; grid-template-columns: 200px 1fr; gap: clamp(40px, 5vw, 80px); align-items: start; }
+.doc-toc { position: sticky; top: 30px; display: flex; flex-direction: column; gap: 12px; border-left: 1px solid var(--line); padding-left: 18px; }
+.doc-toc p { margin: 0 0 4px; font: 700 9px var(--mono); letter-spacing: 1px; color: var(--muted); }
+.doc-toc a { color: #aaaab0; text-decoration: none; font-size: 12px; font-weight: 600; }
+.doc-toc a:hover { color: white; }
+.doc-body { min-width: 0; }
+.doc-body h1 { font-size: clamp(40px, 5vw, 64px); line-height: .95; letter-spacing: -.04em; margin: 10px 0 18px; }
+.doc-intro { color: #aaaab0; font-size: 15px; line-height: 1.7; max-width: 640px; }
+.doc-body h2 { font-size: 26px; letter-spacing: -.02em; margin: 54px 0 14px; padding-top: 22px; border-top: 1px solid var(--line); }
+.doc-body h3 { font-size: 15px; margin: 28px 0 8px; font-family: var(--mono); font-weight: 600; color: #e8e8ea; }
+.doc-body p, .doc-body li { color: #aaaab0; font-size: 14px; line-height: 1.75; }
+.doc-body li { margin: 6px 0; }
+.doc-body a { color: white; }
+.doc-body code { font-family: var(--mono); font-size: 12.5px; background: var(--soft-ink); border: 1px solid var(--line); padding: 1.5px 5px; color: #e8e8ea; }
+.doc-code { background: var(--soft-ink); border: 1px solid var(--line); padding: 18px 20px; overflow-x: auto; font: 12px/1.7 var(--mono); color: #d6d6da; }
+.doc-code code { border: 0; background: none; padding: 0; }
+.doc-table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+.doc-table th, .doc-table td { text-align: left; border: 1px solid var(--line); padding: 9px 12px; font-size: 12.5px; color: #aaaab0; vertical-align: top; }
+.doc-table th { color: white; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; background: var(--soft-ink); }
+.doc-table td code { white-space: nowrap; }
+@media (max-width: 900px) {
+  .doc-page { grid-template-columns: 1fr; }
+  .doc-toc { position: static; flex-direction: row; flex-wrap: wrap; border-left: 0; padding-left: 0; }
+  .doc-toc p { flex-basis: 100%; }
+}
