@@ -343,3 +343,49 @@ h1 span { background: linear-gradient(100deg, #ff2a3b, #ff6a4d); -webkit-backgro
 .gcard.no:hover { border-color: #66666c; }
 
 @media (max-width: 560px) { .games-gallery { grid-template-columns: 1fr 1fr; gap: 10px; } .gcard-info b { font-size: 12px; } .games-legend { gap: 12px; } }
+
+/* ============ Roadmap / coming soon ============ */
+.roadmap { background:
+  radial-gradient(ellipse 60% 50% at 10% 0%, rgba(231,19,39,.08), transparent 55%), var(--ink); }
+.roadmap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.rm-card { border: 1px solid var(--line); background: var(--soft-ink); padding: 26px 24px 28px; transition: border-color .22s, transform .22s; }
+.rm-card:hover { border-color: #45454b; transform: translateY(-3px); }
+.rm-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.rm-ico { font-style: normal; font-size: 20px; opacity: .8; }
+.rm-status { font: 700 9px var(--mono); letter-spacing: 1px; text-transform: uppercase; padding: 5px 9px; border: 1px solid; }
+.rm-status { color: #edc65a; border-color: rgba(232,185,60,.5); }               /* In progress */
+.rm-status.queued { color: #8f8f96; border-color: #3a3a40; }
+.rm-status.ongoing { color: #6fb2ff; border-color: rgba(111,178,255,.4); }
+.rm-status.live { color: #58d98a; border-color: rgba(72,201,120,.5); }
+.rm-card h3 { margin: 0 0 9px; font-size: 18px; letter-spacing: -.02em; }
+.rm-card h3 small { font-size: 12px; color: var(--muted); font-weight: 500; }
+.rm-card p { margin: 0; color: #9a9aa0; font-size: 13px; line-height: 1.65; }
+.rm-card.progress { border-color: rgba(232,185,60,.35); }
+.rm-card.featured { border-color: rgba(231,19,39,.4); background:
+  radial-gradient(ellipse at 80% 20%, rgba(231,19,39,.1), transparent 60%), var(--soft-ink); }
+@media (max-width: 900px) { .roadmap-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .roadmap-grid { grid-template-columns: 1fr; } }
+
+/* Docs page additions */
+.doc-toc p { margin: 18px 0 6px; font: 700 9px var(--mono); letter-spacing: 1px; color: var(--muted); }
+.doc-toc p:first-child { margin-top: 0; }
+.doc-tip { border-left: 2px solid var(--red); background: var(--soft-ink); padding: 14px 18px; margin: 16px 0; font-size: 13px; color: #b7b7bd; }
+.doc-body ol { color: #aaaab0; font-size: 14px; line-height: 1.75; padding-left: 20px; }
+.doc-body ol li { margin: 8px 0; }
+
+/* ============ Mods showcase ============ */
+.mod-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.mod-card { display: flex; flex-direction: column; border: 1px solid var(--line); background: var(--soft-ink); padding: 26px 24px; transition: border-color .22s, transform .22s; }
+.mod-card:hover { border-color: #45454b; transform: translateY(-3px); }
+.mod-emoji { font-size: 34px; line-height: 1; margin-bottom: 16px; }
+.mod-body { flex: 1; }
+.mod-card h3 { margin: 0 0 10px; font-size: 18px; letter-spacing: -.02em; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.mod-game { font: 700 9px var(--mono); letter-spacing: 1px; text-transform: uppercase; color: #6fb2ff; border: 1px solid rgba(111,178,255,.35); padding: 3px 7px; }
+.mod-card p { margin: 0 0 20px; color: #9a9aa0; font-size: 13px; line-height: 1.65; }
+.mod-dl { display: inline-flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 44px; padding: 0 16px; border: 1px solid var(--red); background: var(--red); color: #fff; text-decoration: none; font: 700 12px var(--sans); transition: .2s; }
+.mod-dl:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.mod-dl.ghost { background: transparent; border-color: #3c3c40; color: #cfcfd4; }
+.mod-dl.ghost:hover { border-color: #fff; }
+.mod-card.soon { border-style: dashed; }
+.mod-card.soon .mod-emoji { color: var(--red); }
+@media (max-width: 820px) { .mod-cards { grid-template-columns: 1fr; } }
