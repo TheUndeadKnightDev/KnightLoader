@@ -158,8 +158,9 @@
       <div class="games-check">
         <p><b>Check any game in 10 seconds</b> — open its install folder:</p>
         <ul>
-          <li><code>MonoBleedingEdge\</code> folder → ✅ KnightLoader works</li>
-          <li><code>GameAssembly.dll</code> → ❌ IL2CPP, not supported</li>
+          <li><code>MonoBleedingEdge\</code> folder → ✅ stable loader works</li>
+          <li><code>GameAssembly.dll</code> → 🧪 IL2CPP — <a href="#il2cpp">experimental bridge</a></li>
+          <li>a single <code>UnityEngine.dll</code> (no <code>*Module.dll</code>) → ❌ Unity 5.x, too old</li>
           <li>neither → ❌ not a Unity game</li>
         </ul>
         <p class="tier-note">Anti-cheat note: don't use KnightLoader on multiplayer games with EAC/BattlEye active. Mod singleplayer, or servers where mods are allowed.</p>
