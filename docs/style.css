@@ -301,3 +301,45 @@ h1 span { background: linear-gradient(100deg, #ff2a3b, #ff6a4d); -webkit-backgro
   .hero-bg .glow, .brand-card, .brand-card::after { animation: none; }
   .reveal { opacity: 1; transform: none; transition: none; }
 }
+
+/* ============ Games gallery (cover art) ============ */
+.games-legend { display: flex; flex-wrap: wrap; gap: 22px; margin: -10px 0 26px; }
+.games-legend span { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font: 600 11px var(--mono); }
+.games-legend .dot { width: 9px; height: 9px; border-radius: 50%; }
+.games-legend .dot.ok { background: #48c978; } .games-legend .dot.exp { background: #e8b93c; } .games-legend .dot.no { background: #7a7a80; }
+
+.games-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 16px; }
+.gcard {
+  position: relative; display: block; aspect-ratio: 460 / 215; overflow: hidden;
+  border: 1px solid var(--line); background: #0f0f11; text-decoration: none; color: #fff;
+  transition: transform .22s cubic-bezier(.2,.7,.2,1), border-color .22s, box-shadow .22s;
+}
+.gcard img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .35s, filter .22s; }
+.gcard::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,8,9,0) 34%, rgba(8,8,9,.62) 66%, rgba(8,8,9,.94)); }
+.gcard-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 14px 15px; }
+.gcard-info b { display: block; font-size: 14px; letter-spacing: -.2px; line-height: 1.15; }
+.gcard-info small { display: block; margin-top: 3px; color: #b9b9c0; font: 500 10px var(--mono); }
+.gcard-badge { position: absolute; top: 10px; right: 10px; z-index: 2; font-style: normal;
+  font: 700 9px var(--mono); letter-spacing: .5px; text-transform: uppercase; padding: 5px 8px; border: 1px solid; background: rgba(8,8,9,.66); backdrop-filter: blur(3px); }
+.gcard-fallback { position: absolute; inset: 0; z-index: 1; display: none; align-items: center; justify-content: center;
+  text-align: center; padding: 16px; font-weight: 800; font-size: 17px; letter-spacing: -.3px;
+  background: radial-gradient(ellipse at 50% 30%, #1b1b1f, #0d0d0f); }
+.gcard.noimg img { display: none; }
+.gcard.noimg .gcard-fallback { display: flex; }
+
+.gcard:hover { transform: translateY(-4px); }
+.gcard:hover img { transform: scale(1.05); filter: saturate(1.1); }
+
+/* status accents */
+.gcard.ok  { border-color: rgba(72,201,120,.32); }
+.gcard.ok:hover  { border-color: #48c978; box-shadow: 0 14px 40px rgba(72,201,120,.18); }
+.gcard.ok  .gcard-badge  { color: #58d98a; border-color: rgba(72,201,120,.55); }
+.gcard.exp { border-color: rgba(232,185,60,.34); }
+.gcard.exp:hover { border-color: #e8b93c; box-shadow: 0 14px 40px rgba(232,185,60,.16); }
+.gcard.exp .gcard-badge { color: #edc65a; border-color: rgba(232,185,60,.6); }
+.gcard.no  { }
+.gcard.no img { filter: grayscale(.85) brightness(.7); }
+.gcard.no .gcard-badge { color: #a7a7ad; border-color: #45454b; }
+.gcard.no:hover { border-color: #66666c; }
+
+@media (max-width: 560px) { .games-gallery { grid-template-columns: 1fr 1fr; gap: 10px; } .gcard-info b { font-size: 12px; } .games-legend { gap: 12px; } }

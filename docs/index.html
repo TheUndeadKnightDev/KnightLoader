@@ -131,43 +131,28 @@
     <section class="section games" id="games">
       <div class="section-intro compact">
         <p class="overline">Compatibility</p>
-        <h2>One loader.<br>Many games.</h2>
-        <p class="intro-copy">KnightLoader's core has no game-specific code, so it runs on any Unity <b>Mono</b> game. Here's where it stands today — we only call a game "tested" once it has actually been verified booting.</p>
+        <h2>Tested on real games.</h2>
+        <p class="intro-copy">Every one of these was launched with KnightLoader installed and verified by us — no guesses. 8 Mono games loading mods, plus 2 IL2CPP games where the experimental runtime bridge is proven.</p>
       </div>
 
-      <div class="games-grid">
-        <div class="game-tier">
-          <h3><span class="tier-dot ok"></span> Tested</h3>
-          <p class="tier-note">Verified loading in-game by us.</p>
-          <ul>
-            <li><b>Raft</b> <small>Unity 2021.3 · mods running</small></li>
-            <li><b>Valheim</b> <small>Unity 6 · split-assembly · verified</small></li>
-            <li><b>7 Days to Die</b> <small>Unity 2022.3 · verified</small></li>
-            <li><b>Green Hell</b> <small>Unity 2021.2 · verified</small></li>
-            <li><b>Schedule I</b> <small>Unity 2022.3 · verified</small></li>
-            <li><b>Survive the Nights</b> <small>Unity 2021.3 · verified</small></li>
-            <li><b>Muck</b> <small>Unity 2019.4 · verified</small></li>
-            <li><b>Stick It to the Stickman</b> <small>Unity 2022.3 · verified</small></li>
-          </ul>
-        </div>
-        <div class="game-tier">
-          <h3><span class="tier-dot maybe"></span> Should work</h3>
-          <p class="tier-note">Unity Mono, but not yet verified by us.</p>
-          <ul>
-            <li>Subnautica</li>
-            <li>Most survival &amp; indie Unity games</li>
-            <li>…any Unity Mono title (2017.2+)</li>
-          </ul>
-        </div>
-        <div class="game-tier">
-          <h3><span class="tier-dot no"></span> Not supported</h3>
-          <p class="tier-note">Different runtime — needs a different loader entirely.</p>
-          <ul>
-            <li><b>IL2CPP</b> Unity games <small>not by the stable loader — but see the IL2CPP research below</small></li>
-            <li><b>Unity 5.x / pre-2017</b> <small>monolithic UnityEngine + .NET 3.5, e.g. The Forest</small></li>
-            <li><b>Non-Unity</b> games <small>Terraria &amp; CastleMiner Z (XNA), Project Zomboid &amp; Minecraft (Java)</small></li>
-          </ul>
-        </div>
+      <div class="games-legend">
+        <span><i class="dot ok"></i> Verified · mods load</span>
+        <span><i class="dot exp"></i> IL2CPP · experimental bridge</span>
+        <span><i class="dot no"></i> Below version floor</span>
+      </div>
+
+      <div class="games-gallery">
+        <a class="gcard ok"  href="https://store.steampowered.com/app/648800/"  target="_blank" rel="noopener"><img loading="lazy" alt="Raft" src="https://cdn.cloudflare.steamstatic.com/steam/apps/648800/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Raft</span><div class="gcard-info"><b>Raft</b><small>Unity 2021.3</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard ok"  href="https://store.steampowered.com/app/892970/"  target="_blank" rel="noopener"><img loading="lazy" alt="Valheim" src="https://cdn.cloudflare.steamstatic.com/steam/apps/892970/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Valheim</span><div class="gcard-info"><b>Valheim</b><small>Unity 6 · split-assembly</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard ok"  href="https://store.steampowered.com/app/251570/"  target="_blank" rel="noopener"><img loading="lazy" alt="7 Days to Die" src="https://cdn.cloudflare.steamstatic.com/steam/apps/251570/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">7 Days to Die</span><div class="gcard-info"><b>7 Days to Die</b><small>Unity 2022.3</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard ok"  href="https://store.steampowered.com/app/815370/"  target="_blank" rel="noopener"><img loading="lazy" alt="Green Hell" src="https://cdn.cloudflare.steamstatic.com/steam/apps/815370/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Green Hell</span><div class="gcard-info"><b>Green Hell</b><small>Unity 2021.2</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard ok"  href="https://store.steampowered.com/app/3164500/" target="_blank" rel="noopener"><img loading="lazy" alt="Schedule I" src="https://cdn.cloudflare.steamstatic.com/steam/apps/3164500/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Schedule I</span><div class="gcard-info"><b>Schedule I</b><small>Unity 2022.3</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard ok"  href="https://store.steampowered.com/app/541300/"  target="_blank" rel="noopener"><img loading="lazy" alt="Survive the Nights" src="https://cdn.cloudflare.steamstatic.com/steam/apps/541300/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Survive the Nights</span><div class="gcard-info"><b>Survive the Nights</b><small>Unity 2021.3</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard ok"  href="https://store.steampowered.com/app/1625450/" target="_blank" rel="noopener"><img loading="lazy" alt="Muck" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1625450/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Muck</span><div class="gcard-info"><b>Muck</b><small>Unity 2019.4</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard ok"  href="https://store.steampowered.com/app/2085540/" target="_blank" rel="noopener"><img loading="lazy" alt="Stick It to the Stickman" src="https://cdn.cloudflare.steamstatic.com/steam/apps/2085540/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Stick It to the Stickman</span><div class="gcard-info"><b>Stick It to the Stickman</b><small>Unity 2022.3</small></div><i class="gcard-badge">Verified</i></a>
+        <a class="gcard exp" href="https://store.steampowered.com/app/1326470/" target="_blank" rel="noopener"><img loading="lazy" alt="Sons of the Forest" src="https://cdn.cloudflare.steamstatic.com/steam/apps/1326470/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Sons of the Forest</span><div class="gcard-info"><b>Sons of the Forest</b><small>Unity 2022.2 · IL2CPP</small></div><i class="gcard-badge">Bridge ✦</i></a>
+        <a class="gcard exp" href="https://store.steampowered.com/app/960090/"  target="_blank" rel="noopener"><img loading="lazy" alt="Bloons TD 6" src="https://cdn.cloudflare.steamstatic.com/steam/apps/960090/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">Bloons TD 6</span><div class="gcard-info"><b>Bloons TD 6</b><small>Unity 6 · IL2CPP</small></div><i class="gcard-badge">Bridge ✦</i></a>
+        <a class="gcard no"  href="https://store.steampowered.com/app/242760/"  target="_blank" rel="noopener"><img loading="lazy" alt="The Forest" src="https://cdn.cloudflare.steamstatic.com/steam/apps/242760/header.jpg" onerror="this.parentNode.classList.add('noimg')"><span class="gcard-fallback">The Forest</span><div class="gcard-info"><b>The Forest</b><small>Unity 5.6 · too old</small></div><i class="gcard-badge">Unsupported</i></a>
       </div>
 
       <div class="games-check">
