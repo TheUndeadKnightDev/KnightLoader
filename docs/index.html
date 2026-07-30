@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b0b0c">
-  <meta name="description" content="KnightLoader is a tiny, free universal mod loader for Unity (Mono) games. Doorstop injection, Harmony patching, drop-in Mods folder. First supported game: Raft.">
+  <meta name="description" content="KnightLoader is a tiny, free universal mod loader for Unity games. Doorstop injection, Harmony patching, drop-in mods. 5 games verified across Unity 2017–6, plus experimental IL2CPP support.">
   <title>KnightLoader — Universal Unity Mod Loader</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="assets/knightloader-logo.png">
@@ -18,6 +18,7 @@
     <nav aria-label="Main navigation">
       <a href="#features">Features</a>
       <a href="#games">Games</a>
+      <a href="#il2cpp">IL2CPP</a>
       <a href="docs.html">Docs</a>
       <a href="#releases">Releases</a>
     </nav>
@@ -26,21 +27,29 @@
 
   <main id="top">
     <section class="hero">
+      <div class="hero-bg" aria-hidden="true"><span class="glow"></span><span class="grid"></span></div>
       <div class="hero-copy">
-        <div class="badge"><i></i> Universal mod loading for Unity (Mono)</div>
+        <div class="badge"><i></i> Universal mod loading for Unity — Mono &amp; IL2CPP</div>
         <h1>Mod without<br><span>limits.</span></h1>
         <p>KnightLoader is a tiny, BepInEx-free foundation for Unity modding — Doorstop injection, Harmony patching, and a drop-in <code>Mods</code> folder. No game files are ever modified on disk.</p>
         <div class="actions">
           <a class="button primary" href="https://github.com/TheUndeadKnightDev/KnightLoader/releases/latest">Download for Windows <span>↓</span></a>
-          <a class="button secondary" href="#developers">Explore the API <span>→</span></a>
+          <a class="button secondary" href="#games">See supported games <span>→</span></a>
         </div>
-        <div class="meta"><span>Free forever</span><span>Windows 10 / 11</span><span>First supported game: Raft</span></div>
+        <div class="meta"><span>Free forever</span><span>Windows 10 / 11</span><span>5 games verified</span></div>
       </div>
       <div class="brand-card">
         <div class="brand-card-top"><span>KnightLoader</span><small>UNIVERSAL MOD LOADER</small></div>
         <img src="assets/knightloader-logo.png" alt="KnightLoader knight helmet logo">
         <div class="brand-card-bottom"><span><i></i> Ready</span><small>BUILT FOR UNITY</small></div>
       </div>
+    </section>
+
+    <section class="stats-band" aria-label="KnightLoader by the numbers">
+      <div><b data-count="5">5</b><span>games verified</span></div>
+      <div><b>2017&nbsp;→&nbsp;6</b><span>Unity versions</span></div>
+      <div><b>~14<i>KB</i></b><span>loader size</span></div>
+      <div><b>0</b><span>game files modified</span></div>
     </section>
 
     <section class="trust-bar" aria-label="KnightLoader benefits">
@@ -151,7 +160,7 @@
           <h3><span class="tier-dot no"></span> Not supported</h3>
           <p class="tier-note">Different runtime — needs a different loader entirely.</p>
           <ul>
-            <li><b>IL2CPP</b> Unity games <small>e.g. Sons of the Forest, Among Us, V Rising</small></li>
+            <li><b>IL2CPP</b> Unity games <small>not by the stable loader — but see the IL2CPP research below</small></li>
             <li><b>Unity 5.x / pre-2017</b> <small>monolithic UnityEngine + .NET 3.5, e.g. The Forest</small></li>
             <li><b>Non-Unity</b> games <small>Terraria &amp; CastleMiner Z (XNA), Project Zomboid &amp; Minecraft (Java)</small></li>
           </ul>
@@ -166,6 +175,40 @@
           <li>neither → ❌ not a Unity game</li>
         </ul>
         <p class="tier-note">Anti-cheat note: don't use KnightLoader on multiplayer games with EAC/BattlEye active. Mod singleplayer, or servers where mods are allowed.</p>
+      </div>
+    </section>
+
+    <section class="section il2cpp" id="il2cpp">
+      <div class="il2cpp-inner">
+        <div class="section-intro compact">
+          <p class="overline"><span class="lab-badge">RESEARCH · EXPERIMENTAL</span></p>
+          <h2>Beyond Mono.<br>Into <span>IL2CPP</span>.</h2>
+          <p class="intro-copy">IL2CPP games compile C# straight to native machine code — there's no managed assembly to patch, which is why most loaders stop at Mono. We built a bridge anyway. <b>The managed↔native runtime interop is proven working</b> on two games across two Unity generations.</p>
+        </div>
+
+        <div class="il2cpp-proof">
+          <div class="proof-games">
+            <div class="proof-game"><b>Sons of the Forest</b><span>Unity 2022.2 · metadata v29</span><i class="ok">bridge verified</i></div>
+            <div class="proof-game"><b>Bloons TD 6</b><span>Unity 6 · metadata v31</span><i class="ok">bridge verified</i></div>
+          </div>
+          <div class="proof-log" aria-label="Runtime log excerpt">
+            <div class="proof-log-bar"><span></span><span></span><span></span><small>KnightLoaderIL2CPP.log</small></div>
+<pre>Detected Unity version: 6000.0.58
+Il2CppInterop runtime started.
+il2cpp domain ptr: 0x1F7FBBC2FC0
+UnityEngine.Application class ptr: 0x1F7A061BAF0
+<b>&gt;&gt;&gt; RUNTIME INTEROP WORKS &lt;&lt;&lt;</b></pre>
+          </div>
+        </div>
+
+        <ol class="il2cpp-steps">
+          <li class="done"><b>Inject</b><span>Managed code runs inside the native game via a hosted CoreCLR runtime.</span></li>
+          <li class="done"><b>Map the API</b><span>Cpp2IL reconstructs every game type from the il2cpp metadata.</span></li>
+          <li class="done"><b>Generate interop</b><span>Il2CppInterop builds runtime-callable proxies you compile against.</span></li>
+          <li class="done"><b>Reach live types</b><span>Resolve real game classes by name inside the running process.</span></li>
+          <li class="wip"><b>Full modding API</b><span>Native Harmony patching + typed mod API + update loop. In progress.</span></li>
+        </ol>
+        <p class="tier-note il2cpp-note">Experimental — not in a public release yet. The Mono loader above is the stable, shipping product. IL2CPP support lives in research until the full API lands.</p>
       </div>
     </section>
 
@@ -206,5 +249,29 @@
   </footer>
 
   <script src="releases.js" defer></script>
+  <script>
+    // Scroll-reveal + count-up — no dependencies.
+    (function () {
+      var els = document.querySelectorAll('.section, .stats-band, .hero-copy, .brand-card, .il2cpp-proof, .il2cpp-steps > li');
+      if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); return; }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+      }, { threshold: 0.12 });
+      els.forEach(function (e) { e.classList.add('reveal'); io.observe(e); });
+
+      var counted = false;
+      var band = document.querySelector('.stats-band');
+      if (band) {
+        new IntersectionObserver(function (entries, obs) {
+          if (!entries[0].isIntersecting || counted) return; counted = true; obs.disconnect();
+          document.querySelectorAll('.stats-band b[data-count]').forEach(function (b) {
+            var target = parseInt(b.getAttribute('data-count'), 10), n = 0;
+            var step = Math.max(1, Math.round(target / 24));
+            var t = setInterval(function () { n += step; if (n >= target) { n = target; clearInterval(t); } b.textContent = n; }, 28);
+          });
+        }, { threshold: 0.5 }).observe(band);
+      }
+    })();
+  </script>
 </body>
 </html>
