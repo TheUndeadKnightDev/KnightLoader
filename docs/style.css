@@ -229,7 +229,8 @@ footer small { grid-column: 1 / -1; padding-top: 23px; border-top: 1px solid #20
   mask-image: radial-gradient(ellipse 80% 70% at 60% 30%, #000 30%, transparent 75%);
   -webkit-mask-image: radial-gradient(ellipse 80% 70% at 60% 30%, #000 30%, transparent 75%);
 }
-.hero > * { position: relative; z-index: 1; }
+.hero-copy, .hero .brand-card { position: relative; z-index: 1; }
+.hero-bg { z-index: 0; }
 @keyframes glowPulse { 0%,100% { opacity: .75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
 h1 span { background: linear-gradient(100deg, #ff2a3b, #ff6a4d); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .brand-card { animation: cardFloat 6s ease-in-out infinite; }
