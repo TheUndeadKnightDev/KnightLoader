@@ -26,13 +26,24 @@
 
   <main class="doc-page">
     <aside class="doc-toc" aria-label="On this page">
-      <p>ON THIS PAGE</p>
+      <p>GETTING STARTED</p>
       <a href="#install">Installing</a>
       <a href="#first-mod">Your first mod</a>
       <a href="#lifecycle">The mod lifecycle</a>
       <a href="#api">API reference</a>
-      <a href="#harmony">Patching game code</a>
+      <p>PATCHING GAME CODE</p>
+      <a href="#finding-hooks">Finding things to patch</a>
+      <a href="#harmony">Harmony basics</a>
+      <a href="#advanced-harmony">Advanced patching</a>
+      <a href="#example">Worked example: Red Shark</a>
+      <p>UNDER THE HOOD</p>
+      <a href="#architecture">How injection works</a>
+      <a href="#dependencies">Dependencies &amp; shipping</a>
+      <a href="#debugging">Logging &amp; debugging</a>
       <a href="#other-games">Other Unity games</a>
+      <p>REFERENCE</p>
+      <a href="#distributing">Distributing your mod</a>
+      <a href="#faq">FAQ</a>
       <a href="#troubleshooting">Troubleshooting</a>
       <a href="#uninstall">Uninstalling</a>
     </aside>
@@ -145,8 +156,18 @@ public class MyFirstMod : Mod
         <tr><td><code>ModLoader.LoaderDir</code></td><td>Full path of the <code>KnightLoader</code> folder (put config files here or in ModsDir).</td></tr>
       </table>
 
-      <h2 id="harmony">Patching game code</h2>
-      <p>KnightLoader ships <b>Harmony 2</b> for rewriting game methods in memory at runtime. Decompile the game's <code>Assembly-CSharp.dll</code> with <a href="https://github.com/icsharpcode/ILSpy">ILSpy</a> or dnSpy to find targets, then declare patches and apply them in <code>OnLoad</code>. A real example from the Raft SampleMod — cancelling all player damage:</p>
+      <h2 id="finding-hooks">Finding things to patch</h2>
+      <p>Modding is 80% reconnaissance. Before you can change a game's behaviour you need to know its class and method names — and those live inside the game's own assemblies. The workflow:</p>
+      <ol>
+        <li><b>Open the game's code.</b> Load <code>&lt;Game&gt;_Data\Managed\Assembly-CSharp.dll</code> in a decompiler — <a href="https://github.com/icsharpcode/ILSpy">ILSpy</a> (free, cross-platform) or <a href="https://github.com/dnSpyEx/dnSpy">dnSpyEx</a> (great for Unity). Everything the game does is in there as readable C#.</li>
+        <li><b>Search for the concept.</b> Looking to stop fall damage? Search "Damage". Want to change hunger? Search "Hunger" or "Stat". Decompilers let you full-text search across all types.</li>
+        <li><b>Find the method that does the thing</b> and note its exact <em>type name</em>, <em>method name</em>, and <em>parameters</em> — you'll need all three to target an overload precisely.</li>
+        <li><b>Reference that assembly</b> in your mod's <code>.csproj</code> (add <code>Assembly-CSharp.dll</code> as a <code>&lt;Reference&gt;</code>) so you can write strongly-typed patches against those classes.</li>
+      </ol>
+      <p class="doc-tip">Tip: mods often patch <b>MonoBehaviour lifecycle methods</b> (<code>Awake</code>, <code>Start</code>, <code>Update</code>), <b>property getters</b> (great for "always return max"), and <b>event handlers</b> (<code>OnDeath</code>, <code>OnHit</code>). Getters and small methods are the safest, most stable targets across game updates.</p>
+
+      <h2 id="harmony">Harmony basics</h2>
+      <p>KnightLoader ships <b>Harmony 2</b> for rewriting game methods in memory at runtime — no game files touched. Declare patches with attributes and apply them in <code>OnLoad</code>. A real example from the Raft SampleMod — cancelling all player damage:</p>
       <pre class="doc-code">using HarmonyLib;
 using KnightLoader;
 
@@ -176,9 +197,106 @@ static class Patch_Damage
 }</pre>
       <p><b>Prefix</b> runs before the original (return <code>false</code> to skip it), <b>Postfix</b> after it, <b>Transpiler</b> rewrites its IL. See the <a href="https://harmony.pardeike.net/">Harmony documentation</a> for the full patching guide.</p>
 
+      <h2 id="advanced-harmony">Advanced patching</h2>
+      <p>Harmony injects special parameter names into your prefix/postfix. Ask for any you need — order doesn't matter, and you only declare the ones you use:</p>
+      <table class="doc-table">
+        <tr><th>Parameter</th><th>What it gives you</th></tr>
+        <tr><td><code>__instance</code></td><td>The object the method was called on (typed as the target class). Read/modify its fields.</td></tr>
+        <tr><td><code>__result</code></td><td>The return value. In a <b>postfix</b>, change it to alter what the game sees. Use <code>ref</code>.</td></tr>
+        <tr><td><code>ref float amount</code></td><td>An original parameter by name — <code>ref</code> lets you rewrite it before the method runs.</td></tr>
+        <tr><td><code>__state</code></td><td>Scratch value passed from your prefix to your postfix (e.g. remember a value before, compare after).</td></tr>
+        <tr><td><code>___privateField</code></td><td>Three underscores = access a <b>private field</b> on the instance by name. Read or write it.</td></tr>
+      </table>
+      <pre class="doc-code">// Halve all incoming damage instead of blocking it — edit the argument in place.
+[HarmonyPatch(typeof(PlayerStats), nameof(PlayerStats.Damage))]
+static class HalfDamage
+{
+    static void Prefix(ref float damage) =&gt; damage *= 0.5f;
+}
+
+// Force a getter to always return true (reach a private field with three underscores).
+[HarmonyPatch(typeof(Inventory), "get_IsFull")]
+static class NeverFull
+{
+    static void Postfix(ref bool __result) =&gt; __result = false;
+}</pre>
+      <p><b>Targeting overloads.</b> When a method name is ambiguous, pass the parameter types to pick the exact one:</p>
+      <pre class="doc-code">[HarmonyPatch(typeof(SomeClass), nameof(SomeClass.Method), new[] { typeof(int), typeof(bool) })]</pre>
+      <p><b>Patching private methods</b> that <code>nameof</code> can't see — use the string name, or find them with <code>AccessTools</code>:</p>
+      <pre class="doc-code">var target = AccessTools.Method(typeof(SomeClass), "PrivateMethod");
+Harmony.Patch(target, prefix: new HarmonyMethod(typeof(MyPatch), nameof(MyPatch.Prefix)));</pre>
+
+      <h2 id="example">Worked example: Red Shark</h2>
+      <p>Not every mod patches methods. Sometimes you just manipulate live objects. Our <b>Red Shark</b> mod for Raft recolours every shark — a good example of the "scan &amp; modify" pattern using only <code>OnUpdate</code>, no Harmony at all:</p>
+      <pre class="doc-code">[ModInfo("Red Shark", "1.0.0")]
+public class RedShark : Mod
+{
+    readonly HashSet&lt;int&gt; done = new HashSet&lt;int&gt;();
+    float timer;
+
+    public override void OnUpdate()
+    {
+        // Throttle: scan a couple of times per second, not every frame.
+        timer += Time.deltaTime;
+        if (timer &lt; 1.5f) return;
+        timer = 0f;
+
+        foreach (var smr in Object.FindObjectsOfType&lt;SkinnedMeshRenderer&gt;())
+        {
+            if (smr == null || done.Contains(smr.GetInstanceID())) continue;
+            if (!smr.name.ToLower().Contains("shark")) continue;   // only sharks
+            done.Add(smr.GetInstanceID());
+            foreach (var m in smr.materials) m.color = Color.red;   // per-instance copy
+        }
+    }
+}</pre>
+      <p>Lessons worth stealing: <b>throttle</b> scene scans (they're not free), <b>remember what you've already touched</b> with a <code>HashSet</code> of instance IDs, and use <code>.materials</code> (per-object copies) rather than <code>.sharedMaterial</code> (which would recolour every object using that material).</p>
+
+      <h2 id="architecture">How injection works</h2>
+      <p>Under the hood, getting your code to run inside a shipping game is a careful dance:</p>
+      <ol>
+        <li><b>UnityDoorstop</b> (the <code>winhttp.dll</code> proxy next to the game exe) hijacks the Mono runtime as it initialises and calls KnightLoader's entry point — <em>before any game code runs.</em></li>
+        <li>At that instant Unity's engine bindings aren't ready yet. Touching <code>UnityEngine.Debug.Log</code> or creating a <code>GameObject</code> here would <b>permanently break</b> that call for the whole session (Mono compiles the unbound "internal call" as a throw). So the loader does <em>nothing</em> Unity-related yet.</li>
+        <li>Instead, KnightLoader uses <b>Mono.Cecil</b> to rewrite the game's assemblies <em>in memory</em>, injecting a one-line call into an early startup method (e.g. a <code>MonoBehaviour.Awake</code>). Nothing is written to disk.</li>
+        <li>When the game naturally runs that method — on the main thread, engine fully alive — our injected call fires, and <em>that's</em> when the loader safely creates its host object and loads your mods.</li>
+      </ol>
+      <p>This is why the loader touches zero files on disk, and why it works across wildly different games. For <b>split-assembly games</b> (like Valheim, whose code lives in <code>assembly_valheim.dll</code> rather than <code>Assembly-CSharp.dll</code>), it patches every game-code assembly, so the bootstrap always fires.</p>
+
+      <h2 id="dependencies">Dependencies &amp; shipping</h2>
+      <p>If your mod uses a library that isn't already in the game (say a JSON parser the game doesn't ship), drop that DLL into the <code>Mods\</code> folder alongside your mod. KnightLoader's assembly resolver looks there automatically. Don't ship copies of the game's own assemblies or UnityEngine — those are already loaded.</p>
+      <p>Build against, but <b>don't redistribute</b>, the game's <code>Assembly-CSharp.dll</code> — it's the game's code. Reference it locally; ship only your mod.</p>
+
+      <h2 id="debugging">Logging &amp; debugging</h2>
+      <ul>
+        <li><b><code>KnightLoader\KnightLoader.log</code></b> — the loader's log, in the game folder. Your <code>LogInfo/LogWarn/LogError</code> lines land here, prefixed with your mod name. Truncated each launch.</li>
+        <li><b>The game's <code>Player.log</code></b> — Unity's own log (Windows: <code>%USERPROFILE%\AppData\LocalLow\&lt;Company&gt;\&lt;Game&gt;\Player.log</code>). KnightLoader mirrors messages here too once the engine is ready, and it captures full stack traces.</li>
+        <li><b>Exceptions are isolated</b> — if your <code>OnUpdate</code> throws, the loader catches it, logs it, and keeps the other mods running. Check the log for "threw in &lt;your mod&gt;".</li>
+        <li><b>Iterating:</b> close the game (the DLL is locked while it runs), rebuild, drop the new DLL in <code>Mods\</code>, relaunch. There's no hot-reload yet.</li>
+      </ul>
+
       <h2 id="other-games">Other Unity games</h2>
       <p>The loader core contains no Raft-specific code. To use it with another Unity <b>Mono</b> game, copy the same four items (<code>winhttp.dll</code>, <code>doorstop_config.ini</code>, <code>.doorstop_version</code>, <code>KnightLoader\</code>) into that game's folder and create a <code>Mods\</code> folder. A game is Mono if its install has a <code>MonoBleedingEdge</code> folder; if it has <code>GameAssembly.dll</code> instead, it's IL2CPP and not supported.</p>
       <p><b>Version floor:</b> KnightLoader targets <b>Unity 2017.2 or newer</b> (the "module" era, where <code>UnityEngine.CoreModule.dll</code> exists in <code>Managed\</code>). Unity 5.x / pre-2017 games ship a single monolithic <code>UnityEngine.dll</code> and the older .NET 3.5 Mono profile, which this build can't load.</p>
+
+      <h2 id="distributing">Distributing your mod</h2>
+      <p>A KnightLoader mod is just a DLL. To share it, zip your <code>YourMod.dll</code> (plus any extra dependency DLLs it needs) and tell users to drop it into their <code>Mods\</code> folder. That's the whole install. Good practice:</p>
+      <ul>
+        <li>Put a <code>[ModInfo("Name", "1.0.0", "You")]</code> on your class so it shows a friendly name in the log.</li>
+        <li>Include a short readme: which game + version it's for, what it does, and any hotkeys.</li>
+        <li>Never bundle the game's <code>Assembly-CSharp.dll</code> or UnityEngine DLLs — only your own code.</li>
+        <li>Version your mod so users know when to update. KnightLoader itself is versioned separately.</li>
+      </ul>
+
+      <h2 id="faq">FAQ</h2>
+      <table class="doc-table">
+        <tr><th>Question</th><th>Answer</th></tr>
+        <tr><td>Will this get me banned?</td><td>Don't use it on multiplayer games with kernel anti-cheat (EasyAntiCheat / BattlEye). For singleplayer or mod-friendly servers it's fine. KnightLoader never modifies files on disk, but injected code is still detectable by anti-cheat.</td></tr>
+        <tr><td>Does it work in multiplayer?</td><td>Cosmetic/client-side mods generally work; anything that changes game state usually needs the host (and other clients) to run the same mod. That's game-specific.</td></tr>
+        <tr><td>Will a game update break my mods?</td><td>KnightLoader itself is resilient (it doesn't touch files). Individual mods can break if the game renames the methods they patch — patch stable targets like getters to minimise this.</td></tr>
+        <tr><td>Is it open source?</td><td>KnightLoader is free to use. It's built on the open-source UnityDoorstop and Harmony projects.</td></tr>
+        <tr><td>Can I load multiple mods?</td><td>Yes — every DLL in <code>Mods\</code> loads independently. One crashing doesn't affect the others.</td></tr>
+        <tr><td>IL2CPP games?</td><td>Not with the stable loader. IL2CPP support is experimental — see the <a href="index.html#il2cpp">IL2CPP research</a>.</td></tr>
+      </table>
 
       <h2 id="troubleshooting">Troubleshooting</h2>
       <table class="doc-table">
